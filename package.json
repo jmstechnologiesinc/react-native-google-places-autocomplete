@@ -12,7 +12,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FaridSafi/react-native-google-places-autocomplete.git"
+    "url": "git+https://github.com/jmsstudiosinc/react-native-google-places-autocomplete.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
