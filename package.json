@@ -14,6 +14,9 @@
     "type": "git",
     "url": "git+https://github.com/FaridSafi/react-native-google-places-autocomplete.git"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "keywords": [
     "autocomplete",
     "google",
@@ -30,7 +33,8 @@
   "dependencies": {
     "lodash.debounce": "^4.0.8",
     "prop-types": "^15.7.2",
-    "qs": "~6.9.1"
+    "qs": "~6.9.1",
+    "@jmsstudiosinc/react-native-paper": "5.0.0-rc.9"
   },
   "devDependencies": {
     "@react-native-community/eslint-config": "2.0.0",
@@ -41,7 +45,8 @@
     "typescript": "^3.8.3"
   },
   "peerDependencies": {
-    "react-native": ">= 0.59"
+    "react-native": ">= 0.59",
+    "@jmsstudiosinc/react-native-paper": "*"
   },
   "husky": {
     "hooks": {
