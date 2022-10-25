@@ -569,11 +569,17 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     if (props.renderRow) {
       return props.renderRow(rowData, index);
     }
-
+   
     return (
-      <List.Section>
-        <List.Item  title={_renderDescription(rowData)} />
-        </List.Section>
+      <>
+      {rowData.isPredefinedPlace ?  <List.Item
+                      
+                        title={_renderDescription(rowData)}
+                        left={() => <List.Icon icon="map-marker" />}
+                    /> : <List.Item  title={_renderDescription(rowData)} /> }
+      </>
+        
+       
     );
   };
 
