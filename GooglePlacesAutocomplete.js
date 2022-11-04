@@ -17,12 +17,10 @@ import {
   Keyboard,
   Platform,
   ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableHighlight,
   View,
 } from 'react-native';
+
+import {Searchbar, List, TouchableRipple, Divider} from '@jmsstudiosinc/react-native-paper'
 
 const defaultStyles = {
   container: {
@@ -55,7 +53,7 @@ const defaultStyles = {
   },
   description: {},
   separator: {
-    height: StyleSheet.hairlineWidth,
+    height: 0.5,
     backgroundColor: '#c8c7cc',
   },
   poweredContainer: {
@@ -571,20 +569,17 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     if (props.renderRow) {
       return props.renderRow(rowData, index);
     }
-
+   
     return (
-      <Text
-        style={[
-          props.suppressDefaultStyles ? {} : defaultStyles.description,
-          props.styles.description,
-          rowData.isPredefinedPlace
-            ? props.styles.predefinedPlacesDescription
-            : {},
-        ]}
-        numberOfLines={props.numberOfLines}
-      >
-        {_renderDescription(rowData)}
-      </Text>
+      <>
+      {rowData.isPredefinedPlace ?  <List.Item
+                      
+                        title={_renderDescription(rowData)}
+                        left={() => <List.Icon icon="map-marker" />}
+                    /> : <List.Item  title={_renderDescription(rowData)} /> }
+      </>
+        
+       
     );
   };
 
@@ -625,24 +620,17 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableHighlight
+        <TouchableRipple
           style={
             props.isRowScrollable ? { minWidth: '100%' } : { width: '100%' }
           }
           onPress={() => _onPress(rowData)}
-          underlayColor={props.listUnderlayColor || '#c8c7cc'}
         >
-          <View
-            style={[
-              props.suppressDefaultStyles ? {} : defaultStyles.row,
-              props.styles.row,
-              rowData.isPredefinedPlace ? props.styles.specialItemRow : {},
-            ]}
-          >
+          <View>
             {_renderLoader(rowData)}
             {_renderRowData(rowData, index)}
           </View>
-        </TouchableHighlight>
+        </TouchableRipple>
       </ScrollView>
     );
   };
@@ -767,7 +755,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
           data={dataSource}
           keyExtractor={keyGenerator}
           extraData={[dataSource, props]}
-          ItemSeparatorComponent={_renderSeparator}
+          ItemSeparatorComponent={Divider}
           renderItem={({ item, index }) => _renderRow(item, index)}
           ListEmptyComponent={
             stateText.length > props.minLength && props.listEmptyComponent
@@ -793,36 +781,23 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     InputComp,
     ...userProps
   } = props.textInputProps;
-  const TextInputComp = InputComp || TextInput;
+  
   return (
-    <View
-      style={[
-        props.suppressDefaultStyles ? {} : defaultStyles.container,
-        props.styles.container,
-      ]}
-      pointerEvents='box-none'
-    >
+    <View  pointerEvents='box-none'>
       {!props.textInputHide && (
         <View
-          style={[
-            props.suppressDefaultStyles ? {} : defaultStyles.textInputContainer,
-            props.styles.textInputContainer,
-          ]}
         >
           {_renderLeftButton()}
-          <TextInputComp
-            ref={inputRef}
-            style={[
-              props.suppressDefaultStyles ? {} : defaultStyles.textInput,
-              props.styles.textInput,
-            ]}
-            value={stateText}
+          <Searchbar
+          ref={inputRef}  
+          value={stateText}
+          style={{margin: 4}}
             placeholder={props.placeholder}
             onFocus={
               onFocus
                 ? () => {
                     _onFocus();
-                    onFocus(e);
+                    onFocus();
                   }
                 : _onFocus
             }
@@ -830,18 +805,16 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
               onBlur
                 ? (e) => {
                     _onBlur(e);
-                    onBlur(e);
+                    onBlur();
                   }
                 : _onBlur
             }
-            clearButtonMode={clearButtonMode || 'while-editing'}
             onChangeText={_handleChangeText}
             {...userProps}
           />
           {_renderRightButton()}
         </View>
       )}
-      {props.inbetweenCompo}
       {_getFlatList()}
       {props.children}
     </View>
@@ -861,7 +834,6 @@ GooglePlacesAutocomplete.propTypes = {
   GooglePlacesDetailsQuery: PropTypes.object,
   GooglePlacesSearchQuery: PropTypes.object,
   GoogleReverseGeocodingQuery: PropTypes.object,
-  inbetweenCompo: PropTypes.object,
   isRowScrollable: PropTypes.bool,
   keyboardShouldPersistTaps: PropTypes.oneOf(['never', 'always', 'handled']),
   listEmptyComponent: PropTypes.func,
