@@ -20,7 +20,7 @@ import {
   View,
 } from 'react-native';
 
-import {Searchbar, List, TouchableRipple, Divider} from '@jmsstudiosinc/react-native-paper'
+import {Searchbar, List, TouchableRipple, Divider} from '@jmstechnologiesinc/react-native-paper'
 
 const defaultStyles = {
   container: {

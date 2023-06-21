@@ -1,5 +1,5 @@
 {
-  "name": "@jmsstudiosinc/react-native-google-places-autocomplete",
+  "name": "@jmstechnologiesinc/react-native-google-places-autocomplete",
   "version": "2.4.1",
   "description": "Customizable Google Places autocomplete component for iOS and Android React-Native apps",
   "main": "GooglePlacesAutocomplete.js",
@@ -45,7 +45,7 @@
   },
   "peerDependencies": {
     "react-native": ">= 0.59",
-    "@jmsstudiosinc/react-native-paper": "*"
+    "@jmstechnologiesinc/react-native-paper": "*"
   },
   "husky": {
     "hooks": {
