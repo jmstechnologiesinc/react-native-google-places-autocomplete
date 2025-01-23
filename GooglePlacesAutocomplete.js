@@ -767,7 +767,6 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
             props.renderHeaderComponent &&
             props.renderHeaderComponent(stateText)
           }
-          ListFooterComponent={_renderPoweredLogo}
           {...props}
         />
       );
@@ -785,6 +784,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     ...userProps
   } = props.textInputProps;
 
+
   return (
     <View pointerEvents='box-none'>
       {!props.textInputHide && (
@@ -794,8 +794,9 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
           <Searchbar
             ref={inputRef}
             value={stateText}
-            style={{ margin: 4 }}
-            inputStyle={{ textAlign: "auto" }}
+            inputStyle={{
+              textAlign: "auto",
+            }}
             placeholder={props.placeholder}
             onFocus={
               onFocus
@@ -814,6 +815,8 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
                 : _onBlur
             }
             onChangeText={_handleChangeText}
+            onClear={props.onClear}
+
             {...userProps}
           />
           {_renderRightButton()}
@@ -854,6 +857,7 @@ GooglePlacesAutocomplete.propTypes = {
   onFail: PropTypes.func,
   onNotFound: PropTypes.func,
   onPress: PropTypes.func,
+  onClear: PropTypes.func,
   onTimeout: PropTypes.func,
   placeholder: PropTypes.string,
   predefinedPlaces: PropTypes.array,
@@ -904,6 +908,7 @@ GooglePlacesAutocomplete.defaultProps = {
   onFail: () => { },
   onNotFound: () => { },
   onPress: () => { },
+  onClear: () => { },
   onTimeout: () => console.warn('google places autocomplete: request timeout'),
   placeholder: '',
   predefinedPlaces: [],
