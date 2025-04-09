@@ -20,7 +20,9 @@ import {
   View,
 } from 'react-native';
 
-import { Searchbar, List, TouchableRipple, Divider } from '@jmstechnologiesinc/react-native-paper'
+import { Searchbar, List, TouchableRipple, Divider, MD3LightTheme } from '@jmstechnologiesinc/react-native-paper'
+
+import { localized, } from '@jmstechnologiesinc/react-native-components'
 
 const defaultStyles = {
   container: {
@@ -573,19 +575,32 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
       return props.renderRow(rowData, index);
     }
 
+
     return (
       <>
-        {rowData.isPredefinedPlace ? <List.Item
+        {rowData.isPredefinedPlace ? (
+          <>
+            <List.Item
+              title={_renderDescription(rowData)}
+              left={() => <List.Icon icon="map-marker" />
+              }
+              onPress={() => _onPress(rowData)}
+            />
+            {props.showMapPicker ? (
+              <List.Item
+                title={localized("setLocationMap")}
+                left={() => <List.Icon color={MD3LightTheme.colors.primary} icon="map-marker-radius-outline" />}
+                onPress={() => props.onCallMapPicker()}
+              />
 
-          title={_renderDescription(rowData)}
-          left={() => <List.Icon icon="map-marker" />}
-        /> : <List.Item title={_renderDescription(rowData)} />}
+            ) : null}
+          </>
+        ) : (
+          <List.Item title={_renderDescription(rowData)} />
+        )}
       </>
-
-
     );
   };
-
   const _renderDescription = (rowData) => {
     if (props.renderDescription) {
       return props.renderDescription(rowData);
@@ -623,13 +638,13 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableRipple
-          style={
-            props.isRowScrollable ? { minWidth: '100%' } : { width: '100%' }
-          }
+
+        <TouchableRipple style={
+          props.isRowScrollable ? { minWidth: '100%' } : { width: '100%' }
+        }
           onPress={() => _onPress(rowData)}
         >
-          <View>
+          <View >
             {_renderLoader(rowData)}
             {_renderRowData(rowData, index)}
           </View>
@@ -784,7 +799,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     ...userProps
   } = props.textInputProps;
 
-
+  // console.log(props.showMapPicker)
   return (
     <View pointerEvents='box-none'>
       {!props.textInputHide && (
@@ -829,6 +844,8 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
 });
 
 GooglePlacesAutocomplete.propTypes = {
+  showMapPicker: PropTypes.bool,
+  onCallMapPicker: PropTypes.func,
   autoFillOnNotFound: PropTypes.bool,
   currentLocation: PropTypes.bool,
   currentLocationLabel: PropTypes.string,
@@ -882,6 +899,8 @@ GooglePlacesAutocomplete.propTypes = {
 };
 
 GooglePlacesAutocomplete.defaultProps = {
+  showMapPicker: false,
+  onCallMapPicker: () => { },
   autoFillOnNotFound: false,
   currentLocation: false,
   currentLocationLabel: 'Current location',
