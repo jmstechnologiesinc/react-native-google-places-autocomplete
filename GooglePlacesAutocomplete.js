@@ -582,21 +582,31 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
           <>
             <List.Item
               title={_renderDescription(rowData)}
-              left={() => <List.Icon icon="map-marker" />
+
+              left={() => <List.Icon icon="map-marker"
+                color={MD3LightTheme.colors.primary}
+              />
               }
               onPress={() => _onPress(rowData)}
-            />
-            {props.showMapPicker ? (
-              <List.Item
-                title={localized("setLocationMap")}
-                left={() => <List.Icon color={MD3LightTheme.colors.primary} icon="map-marker-radius-outline" />}
-                onPress={() => props.onCallMapPicker()}
-              />
 
+            />
+            <Divider />
+            {props.showMapPicker ? (
+              <>
+                <List.Item
+                  title={localized("setLocationMap")}
+                  left={() => <List.Icon color={MD3LightTheme.colors.primary} icon="map-marker-radius-outline" />}
+                  onPress={() => props.onCallMapPicker()}
+                />
+
+              </>
             ) : null}
           </>
         ) : (
-          <List.Item title={_renderDescription(rowData)} />
+          <List.Item title={_renderDescription(rowData)}
+            left={() => <List.Icon color={MD3LightTheme.colors.primary} icon="map-marker" />
+            }
+          />
         )}
       </>
     );
@@ -833,6 +843,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
             onClear={props.onClear}
 
             {...userProps}
+            style={{ marginBottom: MD3LightTheme.spacing.x2 }}
           />
           {_renderRightButton()}
         </View>
