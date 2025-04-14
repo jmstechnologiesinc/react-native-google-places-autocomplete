@@ -604,8 +604,7 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
           </>
         ) : (
           <List.Item title={_renderDescription(rowData)}
-            left={() => <List.Icon color={MD3LightTheme.colors.primary} icon="map-marker" />
-            }
+
           />
         )}
       </>
