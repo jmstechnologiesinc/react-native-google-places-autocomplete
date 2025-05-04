@@ -20,7 +20,9 @@ import {
   View,
 } from 'react-native';
 
-import {Searchbar, List, TouchableRipple, Divider} from '@jmstechnologiesinc/react-native-paper'
+import { Searchbar, List, TouchableRipple, Divider, MD3LightTheme } from '@jmstechnologiesinc/react-native-paper'
+
+import { localized, } from '@jmstechnologiesinc/react-native-components'
 
 const defaultStyles = {
   container: {
@@ -156,8 +158,11 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
   }, [props.predefinedPlaces]);
 
   useImperativeHandle(ref, () => ({
+    // setAddressText: (address) => {
+    //   setStateText(address);
+    // },
     setAddressText: (address) => {
-      setStateText(address);
+      _handleChangeText(address);
     },
     getAddressText: () => stateText,
     blur: () => inputRef.current.blur(),
@@ -299,12 +304,12 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
       request.open(
         'GET',
         `${url}/place/details/json?` +
-          Qs.stringify({
-            key: props.query.key,
-            placeid: rowData.place_id,
-            language: props.query.language,
-            ...props.GooglePlacesDetailsQuery,
-          }),
+        Qs.stringify({
+          key: props.query.key,
+          placeid: rowData.place_id,
+          language: props.query.language,
+          ...props.GooglePlacesDetailsQuery,
+        }),
       );
 
       request.withCredentials = requestShouldUseWithCredentials();
@@ -496,9 +501,9 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
             const results =
               props.nearbyPlacesAPI === 'GoogleReverseGeocoding'
                 ? _filterResultsByTypes(
-                    responseJSON.predictions,
-                    props.filterReverseGeocodingByTypes,
-                  )
+                  responseJSON.predictions,
+                  props.filterReverseGeocodingByTypes,
+                )
                 : responseJSON.predictions;
 
             _results = results;
@@ -526,9 +531,9 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
       request.open(
         'GET',
         `${url}/place/autocomplete/json?input=` +
-          encodeURIComponent(text) +
-          '&' +
-          Qs.stringify(props.query),
+        encodeURIComponent(text) +
+        '&' +
+        Qs.stringify(props.query),
       );
 
       request.withCredentials = requestShouldUseWithCredentials();
@@ -569,20 +574,42 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     if (props.renderRow) {
       return props.renderRow(rowData, index);
     }
-   
+
+
     return (
       <>
-      {rowData.isPredefinedPlace ?  <List.Item
-                      
-                        title={_renderDescription(rowData)}
-                        left={() => <List.Icon icon="map-marker" />}
-                    /> : <List.Item  title={_renderDescription(rowData)} /> }
+        {rowData.isPredefinedPlace ? (
+          <>
+            <List.Item
+              title={_renderDescription(rowData)}
+              titleNumberOfLines={2}
+              left={(props) => <List.Icon icon="crosshairs-gps" color={MD3LightTheme.colors.primary} {...props}  />
+              }
+              onPress={() => _onPress(rowData)}
+              
+            />
+            {props.showMapPicker ? (
+              <>
+                <Divider />
+                <List.Item
+                  title={localized("setLocationMap")}
+                  titleNumberOfLines={2}
+                  left={(props) => <List.Icon color={MD3LightTheme.colors.primary} icon="map-marker-radius-outline" {...props}  />}
+                  right={(props) => <List.Icon color={MD3LightTheme.colors.primary} icon={"chevron-right"} {...props}  />}
+                  onPress={() => props.onCallMapPicker()}
+                />
+              </>
+            ) : null}
+          </>
+        ) : (
+          <List.Item 
+            title={_renderDescription(rowData)} titleNumberOfLines={2}
+            left={(props) => <List.Icon color={MD3LightTheme.colors.primary} icon="map-marker-outline" {...props}  />}
+            />
+        )}
       </>
-        
-       
     );
   };
-
   const _renderDescription = (rowData) => {
     if (props.renderDescription) {
       return props.renderDescription(rowData);
@@ -620,13 +647,13 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableRipple
-          style={
-            props.isRowScrollable ? { minWidth: '100%' } : { width: '100%' }
-          }
+
+        <TouchableRipple style={
+          props.isRowScrollable ? { minWidth: '100%' } : { width: '100%' }
+        }
           onPress={() => _onPress(rowData)}
         >
-          <View>
+          <View >
             {_renderLoader(rowData)}
             {_renderRowData(rowData, index)}
           </View>
@@ -764,7 +791,6 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
             props.renderHeaderComponent &&
             props.renderHeaderComponent(stateText)
           }
-          ListFooterComponent={_renderPoweredLogo}
           {...props}
         />
       );
@@ -781,36 +807,43 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
     InputComp,
     ...userProps
   } = props.textInputProps;
-  
+
+  // console.log(props.showMapPicker)
   return (
-    <View  pointerEvents='box-none'>
+    <View pointerEvents='box-none'>
       {!props.textInputHide && (
         <View
         >
           {_renderLeftButton()}
           <Searchbar
-          ref={inputRef}  
-          value={stateText}
-          style={{margin: 4}}
+            ref={inputRef}
+            value={stateText}
+            icon={props.icon}
+            inputStyle={{
+              textAlign: "auto",
+            }}
             placeholder={props.placeholder}
             onFocus={
               onFocus
                 ? () => {
-                    _onFocus();
-                    onFocus();
-                  }
+                  _onFocus();
+                  onFocus();
+                }
                 : _onFocus
             }
             onBlur={
               onBlur
                 ? (e) => {
-                    _onBlur(e);
-                    onBlur();
-                  }
+                  _onBlur(e);
+                  onBlur();
+                }
                 : _onBlur
             }
             onChangeText={_handleChangeText}
+            onClear={props.onClear}
+
             {...userProps}
+            style={{ marginBottom: MD3LightTheme.spacing.x2 }}
           />
           {_renderRightButton()}
         </View>
@@ -822,6 +855,9 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
 });
 
 GooglePlacesAutocomplete.propTypes = {
+  showMapPicker: PropTypes.bool,
+  icon: PropTypes.string,
+  onCallMapPicker: PropTypes.func,
   autoFillOnNotFound: PropTypes.bool,
   currentLocation: PropTypes.bool,
   currentLocationLabel: PropTypes.string,
@@ -850,6 +886,7 @@ GooglePlacesAutocomplete.propTypes = {
   onFail: PropTypes.func,
   onNotFound: PropTypes.func,
   onPress: PropTypes.func,
+  onClear: PropTypes.func,
   onTimeout: PropTypes.func,
   placeholder: PropTypes.string,
   predefinedPlaces: PropTypes.array,
@@ -874,6 +911,9 @@ GooglePlacesAutocomplete.propTypes = {
 };
 
 GooglePlacesAutocomplete.defaultProps = {
+  icon: "",
+  showMapPicker: false,
+  onCallMapPicker: () => { },
   autoFillOnNotFound: false,
   currentLocation: false,
   currentLocationLabel: 'Current location',
@@ -889,7 +929,7 @@ GooglePlacesAutocomplete.defaultProps = {
     type: 'restaurant',
   },
   GoogleReverseGeocodingQuery: {},
-  isRowScrollable: true,
+  isRowScrollable: false,
   keyboardShouldPersistTaps: 'always',
   listUnderlayColor: '#c8c7cc',
   listViewDisplayed: 'auto',
@@ -897,9 +937,10 @@ GooglePlacesAutocomplete.defaultProps = {
   minLength: 0,
   nearbyPlacesAPI: 'GooglePlacesSearch',
   numberOfLines: 1,
-  onFail: () => {},
-  onNotFound: () => {},
-  onPress: () => {},
+  onFail: () => { },
+  onNotFound: () => { },
+  onPress: () => { },
+  onClear: () => { },
   onTimeout: () => console.warn('google places autocomplete: request timeout'),
   placeholder: '',
   predefinedPlaces: [],
