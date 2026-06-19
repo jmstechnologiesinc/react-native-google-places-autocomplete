@@ -1,12 +1,13 @@
 {
   "name": "@jmstechnologiesinc/react-native-google-places-autocomplete",
-  "version": "2.4.11",
+  "version": "2.4.12",
   "description": "Customizable Google Places autocomplete component for iOS and Android React-Native apps",
   "main": "GooglePlacesAutocomplete.js",
   "types": "GooglePlacesAutocomplete.d.ts",
   "scripts": {
     "lint": "eslint . && prettier --write .",
-    "release": "npx release-it"
+    "release": "npx release-it",
+    "prepare": "husky"
   },
   "author": "Farid from Safi",
   "license": "MIT",
@@ -36,21 +37,20 @@
     "qs": "~6.9.1"
   },
   "devDependencies": {
-    "@react-native-community/eslint-config": "2.0.0",
-    "eslint": "7.10.0",
-    "husky": "4.3.0",
-    "lint-staged": "10.4.0",
-    "prettier": "2.1.2",
-    "typescript": "^3.8.3"
+    "@react-native/eslint-config": "^0.85.0",
+    "eslint": "^8.57.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.0"
   },
   "peerDependencies": {
-    "react-native": ">= 0.59",
+    "react": ">=19.0.0",
+    "react-native": ">=0.85.0",
     "@jmstechnologiesinc/react-native-paper": "*"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+  "engines": {
+    "node": ">=20"
   },
   "lint-staged": {
     "*/**": "yarn lint"

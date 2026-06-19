@@ -69,7 +69,11 @@ const defaultStyles = {
   powered: {},
 };
 
-export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
+export const GooglePlacesAutocomplete = forwardRef((propsIn, ref) => {
+  // React 19 no longer applies `defaultProps` to function components, so merge
+  // the defaults manually to keep optional props (e.g. `styles`) defined.
+  const props = { ...GooglePlacesAutocomplete.defaultProps, ...propsIn };
+
   let _results = [];
   let _requests = [];
 
@@ -762,7 +766,10 @@ export const GooglePlacesAutocomplete = forwardRef((props, ref) => {
   };
 
   const _getFlatList = () => {
-    const keyGenerator = () => Math.random().toString(36).substr(2, 10);
+    // Stable keys let FlatList reuse rows instead of re-mounting every item on
+    // each render (a perf anti-pattern with random keys).
+    const keyGenerator = (item, index) =>
+      item.place_id ?? item.id ?? `${item.description ?? 'row'}-${index}`;
 
     if (
       supportedPlatform() &&
