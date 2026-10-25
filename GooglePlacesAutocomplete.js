@@ -69,6 +69,59 @@ const defaultStyles = {
   powered: {},
 };
 
+// Places API (New) Autocomplete: answers browsers directly (CORS), so the web
+// needs no proxy, and the same request serves every platform.
+// https://developers.google.com/maps/documentation/places/web-service/place-autocomplete
+const PLACES_AUTOCOMPLETE_URL = 'https://places.googleapis.com/v1/places:autocomplete';
+const PLACES_AUTOCOMPLETE_FIELDS = [
+  'suggestions.placePrediction.placeId',
+  'suggestions.placePrediction.text.text',
+  'suggestions.placePrediction.structuredFormat',
+  'suggestions.placePrediction.types',
+].join(',');
+
+// The legacy `components` filter (`country:us|country:do`) as the new
+// `includedRegionCodes` (`['us', 'do']`).
+const regionCodesOf = (components) =>
+  typeof components === 'string'
+    ? components
+        .split('|')
+        .map((part) => part.trim().match(/^country:([a-z]{2})$/i)?.[1]?.toLowerCase())
+        .filter(Boolean)
+    : [];
+
+// The request body from the legacy `query` prop, which keeps its shape: `key`
+// travels as a header, `components` as region codes, `language` as is.
+const autocompleteBodyOf = (input, query, sessionToken) => {
+  const includedRegionCodes = regionCodesOf(query?.components);
+  return {
+    input,
+    sessionToken,
+    ...(includedRegionCodes.length ? { includedRegionCodes } : {}),
+    ...(query?.language ? { languageCode: query.language } : {}),
+  };
+};
+
+// A suggestion in the legacy prediction's shape, so rows, `onPress` and the
+// callers keep reading `description` and `place_id`.
+const predictionOf = ({ placePrediction }) => ({
+  description: placePrediction.text?.text ?? '',
+  place_id: placePrediction.placeId,
+  structured_formatting: {
+    main_text: placePrediction.structuredFormat?.mainText?.text ?? '',
+    secondary_text: placePrediction.structuredFormat?.secondaryText?.text ?? '',
+  },
+  types: placePrediction.types ?? [],
+});
+
+// One session per search, ended by a selection: Google bills the session's
+// requests together.
+const newSessionToken = () =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const random = (Math.random() * 16) | 0;
+    return (char === 'x' ? random : (random & 0x3) | 0x8).toString(16);
+  });
+
 export const GooglePlacesAutocomplete = forwardRef((propsIn, ref) => {
   // React 19 no longer applies `defaultProps` to function components, so merge
   // the defaults manually to keep optional props (e.g. `styles`) defined.
@@ -146,6 +199,7 @@ export const GooglePlacesAutocomplete = forwardRef((propsIn, ref) => {
   const [url] = useState(getRequestUrl(props.requestUrl));
 
   const inputRef = useRef();
+  const sessionTokenRef = useRef(newSessionToken());
 
   useEffect(() => {
     // This will load the default value's search results after the view has
@@ -184,16 +238,10 @@ export const GooglePlacesAutocomplete = forwardRef((propsIn, ref) => {
     _requests = [];
   };
 
-  const supportedPlatform = () => {
-    if (Platform.OS === 'web' && !props.requestUrl) {
-      console.warn(
-        'This library cannot be used for the web unless you specify the requestUrl prop. See https://git.io/JflFv for more for details.',
-      );
-      return false;
-    } else {
-      return true;
-    }
-  };
+  // The autocomplete (Places API (New)) answers browsers directly, so every
+  // platform is supported. Place details and the nearby search still call the
+  // legacy service, which a browser reaches only through `requestUrl`.
+  const supportedPlatform = () => true;
 
   const getCurrentLocation = () => {
     let options = {
@@ -274,6 +322,7 @@ export const GooglePlacesAutocomplete = forwardRef((propsIn, ref) => {
             setStateText(_renderDescription(rowData));
 
             delete rowData.isLoading;
+            sessionTokenRef.current = newSessionToken();
             props.onPress(rowData, details);
             // }
           } else {
@@ -336,6 +385,7 @@ export const GooglePlacesAutocomplete = forwardRef((propsIn, ref) => {
       let predefinedPlace = _getPredefinedPlace(rowData);
 
       // sending predefinedPlace as details for predefined places
+      sessionTokenRef.current = newSessionToken();
       props.onPress(predefinedPlace, predefinedPlace);
     }
   };
@@ -498,33 +548,33 @@ export const GooglePlacesAutocomplete = forwardRef((propsIn, ref) => {
           return;
         }
 
+        let responseJSON = {};
+        try {
+          responseJSON = JSON.parse(request.responseText || '{}');
+        } catch (error) {
+          // Not JSON (a proxy or network page): reported below by its status.
+        }
         if (request.status === 200) {
-          const responseJSON = JSON.parse(request.responseText);
-          if (typeof responseJSON.predictions !== 'undefined') {
-            // if (_isMounted === true) {
-            const results =
-              props.nearbyPlacesAPI === 'GoogleReverseGeocoding'
-                ? _filterResultsByTypes(
-                  responseJSON.predictions,
-                  props.filterReverseGeocodingByTypes,
-                )
-                : responseJSON.predictions;
+          // if (_isMounted === true) {
+          const predictions = (responseJSON.suggestions || [])
+            .filter((suggestion) => suggestion.placePrediction)
+            .map(predictionOf);
+          const results =
+            props.nearbyPlacesAPI === 'GoogleReverseGeocoding'
+              ? _filterResultsByTypes(predictions, props.filterReverseGeocodingByTypes)
+              : predictions;
 
-            _results = results;
-            setDataSource(buildRowsFromResults(results));
-            // }
+          _results = results;
+          setDataSource(buildRowsFromResults(results));
+          // }
+        } else if (request.status !== 0) {
+          // Status 0: aborted by a newer keystroke.
+          const message = responseJSON.error?.message ?? `HTTP ${request.status}`;
+          if (!props.onFail) {
+            console.warn('google places autocomplete: ' + message);
+          } else {
+            props.onFail(message);
           }
-          if (typeof responseJSON.error_message !== 'undefined') {
-            if (!props.onFail)
-              console.warn(
-                'google places autocomplete: ' + responseJSON.error_message,
-              );
-            else {
-              props.onFail(responseJSON.error_message);
-            }
-          }
-        } else {
-          // console.warn("google places autocomplete: request could not be completed or has been aborted");
         }
       };
 
@@ -532,18 +582,15 @@ export const GooglePlacesAutocomplete = forwardRef((propsIn, ref) => {
         setStateText(props.preProcess(text));
       }
 
-      request.open(
-        'GET',
-        `${url}/place/autocomplete/json?input=` +
-        encodeURIComponent(text) +
-        '&' +
-        Qs.stringify(props.query),
-      );
+      request.open('POST', PLACES_AUTOCOMPLETE_URL);
+      setRequestHeaders(request, {
+        ...getRequestHeaders(props.requestUrl),
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': props.query.key,
+        'X-Goog-FieldMask': PLACES_AUTOCOMPLETE_FIELDS,
+      });
 
-      request.withCredentials = requestShouldUseWithCredentials();
-      setRequestHeaders(request, getRequestHeaders(props.requestUrl));
-
-      request.send();
+      request.send(JSON.stringify(autocompleteBodyOf(text, props.query, sessionTokenRef.current)));
     } else {
       _results = [];
       setDataSource(buildRowsFromResults([]));
