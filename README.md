@@ -31,7 +31,7 @@ yarn add react-native-google-places-autocomplete
 
 **Step 2.**
 
-Get your [Google Places API keys](https://developers.google.com/maps/documentation/places/web-service/get-api-key/) and enable "Google Places API Web Service" (NOT Android or iOS) in the console. Billing must be enabled on the account.
+Get your [Google Places API keys](https://developers.google.com/maps/documentation/places/web-service/get-api-key/) and enable "Places API (New)" in the console; the autocomplete calls [Autocomplete (New)](https://developers.google.com/maps/documentation/places/web-service/place-autocomplete). Place details and the nearby search (`fetchDetails`, `currentLocation`) still call the legacy "Places API". Billing must be enabled on the account.
 
 **Step 3.**
 
@@ -406,7 +406,9 @@ export default GooglePlacesInput;
 
 ## Web Support
 
-Web support can be enabled via the `requestUrl` prop, by passing in a URL that you can use to proxy your requests. CORS implemented by the Google Places API prevent using this library directly on the web. You will need to use a proxy server. Please be mindful of this limitation when opening an issue.
+The autocomplete calls Places API (New), which answers browsers directly (CORS), so it works on the web with no proxy; restrict the key to your sites (HTTP referrers). The `query` prop keeps its shape: `key` is sent in the `X-Goog-Api-Key` header, `components` (`country:us|country:do`) as `includedRegionCodes`, and `language` as `languageCode`.
+
+Place details and the nearby search still call the legacy service, which CORS keeps from the web: for those, the `requestUrl` prop takes a URL that proxies your requests.
 
 The `requestUrl` prop takes an object with two required properties: `useOnPlatform` and `url`, and an optional `headers` property.
 
@@ -476,7 +478,7 @@ This library does not use the iOS, Android or JS SDKs from Google. This comes wi
 **Cons:**
 
 - the library is not compatible with a Application key restrictions
-- doesn't work directly on the web without a proxy server
+- place details and the nearby search don't work directly on the web without a proxy server (the autocomplete does)
 - any Google API change can be a breaking change for the library.
 
 ### Use Inside a `<ScrollView/>` or `<FlatList/>`
