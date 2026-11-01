@@ -1,6 +1,6 @@
 {
   "name": "@jmstechnologiesinc/react-native-google-places-autocomplete",
-  "version": "2.4.12",
+  "version": "2.4.14",
   "description": "Customizable Google Places autocomplete component for iOS and Android React-Native apps",
   "main": "GooglePlacesAutocomplete.js",
   "types": "GooglePlacesAutocomplete.d.ts",
@@ -34,7 +34,7 @@
   "dependencies": {
     "lodash.debounce": "^4.0.8",
     "prop-types": "^15.7.2",
-    "qs": "~6.9.1"
+    "qs": "^6.11.0"
   },
   "devDependencies": {
     "@react-native/eslint-config": "^0.85.0",
